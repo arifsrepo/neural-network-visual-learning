@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Python & NumPy Neural Network Interactive Lab 🐍</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --python-blue: #3776ab;
+      --python-yellow: #ffd43b;
+      --success: #4ade80;
+      --warning: #facc15;
+      --danger: #f87171;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --math-bg: #1e293b;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 16px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .brand h1 {
+      font-size: 20px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .server-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #1e293b;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-family: monospace;
+      border: 1px solid #334155;
+    }
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+    /* Navigation */
+    nav.lab-nav {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 8px 24px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+    }
+    nav.lab-nav button {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    nav.lab-nav button:hover {
+      background: #1e293b;
+      color: var(--text);
+    }
+    nav.lab-nav button.active {
+      background: #1e293b;
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+    main {
+      flex: 1;
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .lab-panel {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .lab-panel.active {
+      display: flex;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    .card-header {
+      margin-bottom: 16px;
+    }
+    .card-header h2 {
+      font-size: 19px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-header p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    canvas {
+      display: block;
+      background: radial-gradient(circle at 50% 50%, #172033 0%, #0b0f19 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+    }
+    #cLab1 { aspect-ratio: 540 / 280; }
+    #cLab3 { aspect-ratio: 540 / 300; }
+    #cLab4 { aspect-ratio: 540 / 280; }
+    #cLab5 { aspect-ratio: 540 / 340; }
+    #cLab6 { aspect-ratio: 540 / 300; }
+    #cLab7 { aspect-ratio: 900 / 460; }
+
+    /* Forms & Controls */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #151d2f;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .form-group h3 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--accent);
+      border-bottom: 1px solid #1f2937;
+      padding-bottom: 6px;
+    }
+    .field-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .field-row label {
+      font-size: 13px;
+      color: #cbd5e1;
+      font-weight: 500;
+      min-width: 110px;
+    }
+    input[type=number] {
+      background: #0b0f19;
+      border: 1px solid #334155;
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 14px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      width: 85px;
+      text-align: right;
+    }
+    input[type=range] {
+      flex: 1;
+      min-width: 100px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    select {
+      background: #0b0f19;
+      border: 1px solid #334155;
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      max-width: 100%;
+    }
+    button.btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: var(--text);
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    button.btn:hover {
+      background: #334155;
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    button.btn-primary {
+      background: var(--accent-hover);
+      border-color: var(--accent);
+      color: white;
+    }
+    button.btn-primary:hover {
+      background: #0369a1;
+      color: white;
+    }
+    .btn-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    /* Math Breakdown Box */
+    .math-breakdown {
+      background: var(--math-bg);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 13px;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    .math-step {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 5px 0;
+      border-bottom: 1px dashed #334155;
+    }
+    .math-step:last-child {
+      border-bottom: none;
+    }
+    .math-step .step-title {
+      color: var(--text-muted);
+      font-family: inherit;
+      flex: 1 1 auto;
+    }
+    .math-step .step-val {
+      color: var(--text);
+      font-weight: bold;
+      word-break: break-word;
+    }
+    .backend-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-top: 6px;
+      font-family: monospace;
+      max-width: 100%;
+      word-break: break-word;
+    }
+    .status-badge {
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      display: inline-block;
+    }
+    .status-fired {
+      background: rgba(74, 222, 128, 0.2);
+      color: #4ade80;
+      border: 1px solid #4ade80;
+    }
+    .status-dormant {
+      background: rgba(248, 113, 113, 0.2);
+      color: #f87171;
+      border: 1px solid #f87171;
+    }
+    .highlight-res {
+      color: var(--success);
+      font-weight: bold;
+      font-size: 15px;
+    }
+    .highlight-dormant {
+      color: var(--danger);
+      font-weight: bold;
+      font-size: 15px;
+    }
+    .log-box {
+      background: #0b0f19;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 12px;
+      max-height: 160px;
+      overflow-y: auto;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 12px;
+      color: #94a3b8;
+      word-break: break-word;
+    }
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid #151d2f;
+    }
+    .log-entry span.time {
+      color: #64748b;
+      margin-right: 8px;
+    }
+
+    /* Scrollbar styling for horizontal tab nav */
+    nav.lab-nav {
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: #334155 var(--card-bg);
+    }
+    nav.lab-nav::-webkit-scrollbar {
+      height: 5px;
+    }
+    nav.lab-nav::-webkit-scrollbar-track {
+      background: var(--card-bg);
+    }
+    nav.lab-nav::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    /* Responsive Media Queries */
+    @media (max-width: 1024px) {
+      main {
+        padding: 18px 16px;
+      }
+    }
+    @media (max-width: 900px) {
+      .grid-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+    @media (max-width: 640px) {
+      header {
+        padding: 12px 14px;
+      }
+      .brand h1 {
+        font-size: 16px;
+      }
+      .server-status {
+        width: 100%;
+        justify-content: center;
+        font-size: 11px;
+        padding: 5px 10px;
+      }
+      nav.lab-nav {
+        padding: 6px 12px;
+        gap: 6px;
+      }
+      nav.lab-nav button {
+        padding: 7px 12px;
+        font-size: 12px;
+      }
+      main {
+        padding: 10px 8px;
+      }
+      .card {
+        padding: 14px 12px;
+        border-radius: 10px;
+      }
+      .card-header h2 {
+        font-size: 17px;
+      }
+      .card-header p {
+        font-size: 13px;
+      }
+      .form-group {
+        padding: 12px 10px;
+        gap: 12px;
+      }
+      .field-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }
+      .field-row label {
+        min-width: 0;
+        width: 100%;
+        font-size: 12px;
+      }
+      .field-row > div.controls-subrow,
+      .field-row {
+        position: relative;
+      }
+      .field-row input[type=range] {
+        width: 100%;
+      }
+      .field-row input[type=number] {
+        width: 100%;
+        text-align: left;
+      }
+      .field-row select {
+        width: 100%;
+      }
+      .math-breakdown {
+        padding: 12px 10px;
+        font-size: 12px;
+      }
+      .math-step {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+      }
+      .math-step .step-val {
+        align-self: flex-start;
+      }
+      .btn-bar {
+        flex-direction: column;
+        gap: 8px;
+      }
+      .btn-bar button.btn {
+        width: 100%;
+      }
+      .log-box {
+        max-height: 120px;
+        font-size: 11px;
+        padding: 8px;
+      }
+    }
+    @media (max-width: 400px) {
+      .brand h1 {
+        font-size: 15px;
+      }
+      .card {
+        padding: 10px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1>🐍 Real Python & NumPy Neural Network Lab</h1>
+    </div>
+    <div class="server-status" id="serverStatusBadge">
+      <div class="status-dot"></div>
+      <span id="serverStatusText">Connecting to Python Backend (PID ...)...</span>
+    </div>
+  </header>
+
+  <!-- Lab Navigation -->
+  <nav class="lab-nav">
+    <button class="active" onclick="switchLab('lab1', this)">Lab 1: Python NumPy Dot Product</button>
+    <button onclick="switchLab('lab2', this)">Lab 2: Python Perceptron Updates</button>
+    <button onclick="switchLab('lab3', this)">Lab 3: NumPy MSE Loss</button>
+    <button onclick="switchLab('lab4', this)">Lab 4: Python Gradient Steps</button>
+    <button onclick="switchLab('lab5', this)">Lab 5: NumPy Decision Boundary</button>
+    <button onclick="switchLab('lab6', this)">Lab 6: NumPy XOR Backpropagation</button>
+    <button onclick="switchLab('lab7', this)">Lab 7: Live Neuron Firing</button>
+  </nav>
+
+  <main>
+    <!-- ========================================================
+         LAB 1: NEURON ARITHMETIC (POWERED BY REAL NUMPY)
+         ======================================================== -->
+    <section id="lab1" class="lab-panel active">
+      <div class="card">
+        <div class="card-header">
+          <h2><span>🧮</span> Lab 1: Python NumPy Forward Pass</h2>
+          <p>
+            When you adjust values, your inputs are sent to the Python server, where <code>np.dot(x, w) + b</code> is executed in real CPython.
+          </p>
+        </div>
+
+        <div class="grid-layout">
+          <!-- Visual & Math Breakdown -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <canvas id="cLab1" width="540" height="280"></canvas>
+
+            <div class="math-breakdown">
+              <div class="math-step">
+                <span class="step-title">1. NumPy Array Dot Product:</span>
+                <span class="step-val" id="l1_dot">np.dot([x1, x2], [w1, w2]) = 1.00</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">2. Add Scalar Bias (b):</span>
+                <span class="step-val" id="l1_bias_val">+ (-0.70) = +0.30</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">3. Total Weighted Sum (z):</span>
+                <span class="step-val" id="l1_sum">z = +0.30</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">4. Python Activation Output:</span>
+                <span class="step-val highlight-res" id="l1_final">Output = 1.0 (FIRED! 🔥)</span>
+              </div>
+              <div class="backend-badge" id="l1_engine_badge">⚡ Executed by Real NumPy Backend</div>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="form-group">
+              <h3>Input Array x = np.array([x1, x2])</h3>
+              <div class="field-row">
+                <label>Input x1:</label>
+                <input type="range" id="l1_x1_r" min="-2" max="2" step="0.1" value="1" oninput="syncL1('x1', this.value)">
+                <input type="number" id="l1_x1_n" step="0.1" value="1.0" oninput="syncL1('x1', this.value)">
+              </div>
+              <div class="field-row">
+                <label>Input x2:</label>
+                <input type="range" id="l1_x2_r" min="-2" max="2" step="0.1" value="1" oninput="syncL1('x2', this.value)">
+                <input type="number" id="l1_x2_n" step="0.1" value="1.0" oninput="syncL1('x2', this.value)">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <h3>Weights Array w = np.array([w1, w2]) & Scalar Bias</h3>
+              <div class="field-row">
+                <label>Weight w1:</label>
+                <input type="range" id="l1_w1_r" min="-3" max="3" step="0.1" value="0.5" oninput="syncL1('w1', this.value)">
+                <input type="number" id="l1_w1_n" step="0.1" value="0.5" oninput="syncL1('w1', this.value)">
+              </div>
+              <div class="field-row">
+                <label>Weight w2:</label>
+                <input type="range" id="l1_w2_r" min="-3" max="3" step="0.1" value="0.5" oninput="syncL1('w2', this.value)">
+                <input type="number" id="l1_w2_n" step="0.1" value="0.5" oninput="syncL1('w2', this.value)">
+              </div>
+              <div class="field-row">
+                <label>Bias b:</label>
+                <input type="range" id="l1_b_r" min="-3" max="3" step="0.1" value="-0.7" oninput="syncL1('b', this.value)">
+                <input type="number" id="l1_b_n" step="0.1" value="-0.7" oninput="syncL1('b', this.value)">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <h3>Activation Function</h3>
+              <div class="field-row">
+                <label>Choose Function:</label>
+                <select id="l1_act" onchange="calcL1()">
+                  <option value="step">Step (Threshold: 1 if z >= 0 else 0)</option>
+                  <option value="relu">ReLU: max(0, z)</option>
+                  <option value="sigmoid">Sigmoid: 1 / (1 + e^-z)</option>
+                  <option value="tanh">Tanh: tanh(z)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="btn-bar">
+              <button class="btn" onclick="presetL1('AND')">Preset: AND Gate</button>
+              <button class="btn" onclick="presetL1('OR')">Preset: OR Gate</button>
+              <button class="btn" onclick="presetL1('RESET')">Reset to Zeros</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         LAB 2: TRAINING SIMULATOR (POWERED BY REAL PYTHON)
+         ======================================================== -->
+    <section id="lab2" class="lab-panel">
+      <div class="card">
+        <div class="card-header">
+          <h2><span>🎯</span> Lab 2: Real Python Perceptron Learning</h2>
+          <p>
+            Clicking <strong>"Perform Update Step in Python"</strong> executes the weight delta equation in Python: <code>w += lr * err * x</code>.
+          </p>
+        </div>
+
+        <div class="grid-layout">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="math-breakdown">
+              <div class="math-step">
+                <span class="step-title">Sample Inputs:</span>
+                <span class="step-val" id="l2_disp_input">[x1 = 1, x2 = 0] | Target: y = 0</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">NumPy Prediction (z = w·x + b):</span>
+                <span class="step-val" id="l2_disp_pred">z = 0.50 ➔ Prediction = 1</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">Error in Python:</span>
+                <span class="step-val" id="l2_disp_err">Error = 0 - 1 = -1</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">NumPy Vector Delta (Δw = lr·err·x):</span>
+                <span class="step-val" id="l2_disp_delta">Δw1 = -0.50, Δw2 = 0.00, Δb = -0.50</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">Updated Weights Array:</span>
+                <span class="step-val" id="l2_disp_new">w1: 0.00, w2: 0.50, b: -0.50</span>
+              </div>
+              <div class="backend-badge" id="l2_engine_badge">⚡ Executed by Real NumPy Backend</div>
+            </div>
+
+            <h4 style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Python Execution History:</h4>
+            <div class="log-box" id="l2_log">
+              <div class="log-entry">Click 'Perform Update Step in Python' to execute a learning step...</div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="form-group">
+              <h3>1. Select Sample to Train</h3>
+              <div class="field-row">
+                <label>Training Sample:</label>
+                <select id="l2_sample" onchange="previewL2()">
+                  <option value="0">Sample 1: [x1 = 0, x2 = 0] ➔ Target: 0</option>
+                  <option value="1">Sample 2: [x1 = 0, x2 = 1] ➔ Target: 0</option>
+                  <option value="2">Sample 3: [x1 = 1, x2 = 0] ➔ Target: 0</option>
+                  <option value="3">Sample 4: [x1 = 1, x2 = 1] ➔ Target: 1</option>
+                </select>
+              </div>
+              <div class="field-row">
+                <label>Learning Rate (η):</label>
+                <input type="number" id="l2_lr" step="0.05" min="0.01" max="1.0" value="0.5">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <h3>2. Current Weights in Python</h3>
+              <div class="field-row">
+                <label>w1:</label>
+                <input type="number" id="l2_w1" step="0.1" value="0.0">
+              </div>
+              <div class="field-row">
+                <label>w2:</label>
+                <input type="number" id="l2_w2" step="0.1" value="0.0">
+              </div>
+              <div class="field-row">
+                <label>bias b:</label>
+                <input type="number" id="l2_b" step="0.1" value="0.0">
+              </div>
+            </div>
+
+            <div class="btn-bar">
+              <button class="btn btn-primary" onclick="stepL2()">Perform Update Step in Python ➔</button>
+              <button class="btn" onclick="resetL2()">Reset Weights to 0</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         LAB 3: LOSS EXPLORER (POWERED BY REAL NUMPY)
+         ======================================================== -->
+    <section id="lab3" class="lab-panel">
+      <div class="card">
+        <div class="card-header">
+          <h2><span>📉</span> Lab 3: NumPy Mean Squared Error (MSE)</h2>
+          <p>
+            The loss curve points are computed using <code>np.linspace()</code> and vectorized evaluation on the Python backend.
+          </p>
+        </div>
+
+        <div class="grid-layout">
+          <div>
+            <canvas id="cLab3" width="540" height="300"></canvas>
+            <div class="math-breakdown" style="margin-top: 14px;">
+              <div class="math-step">
+                <span class="step-title">NumPy Prediction (y_hat = w · x):</span>
+                <span class="step-val" id="l3_pred">y_hat = 0.50 × 2.00 = 1.00</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">Difference (Error):</span>
+                <span class="step-val" id="l3_diff">1.00 - 3.00 = -2.00</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">Python MSE Loss:</span>
+                <span class="step-val highlight-res" id="l3_loss">Loss = (-2.00)² = 4.00</span>
+              </div>
+              <div class="backend-badge" id="l3_engine_badge">⚡ Executed by Real NumPy Backend</div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="form-group">
+              <h3>Experiment Parameters</h3>
+              <div class="field-row">
+                <label>Input x:</label>
+                <input type="number" id="l3_x" step="0.5" value="2.0" oninput="calcL3()">
+              </div>
+              <div class="field-row">
+                <label>True Target y:</label>
+                <input type="number" id="l3_y" step="0.5" value="3.0" oninput="calcL3()">
+              </div>
+              <div class="field-row">
+                <label>Weight w:</label>
+                <input type="range" id="l3_w_r" min="-1" max="4" step="0.05" value="0.5" oninput="syncL3(this.value)">
+                <input type="number" id="l3_w_n" step="0.05" value="0.5" oninput="syncL3(this.value)">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         LAB 4: GRADIENT DESCENT (POWERED BY REAL PYTHON)
+         ======================================================== -->
+    <section id="lab4" class="lab-panel">
+      <div class="card">
+        <div class="card-header">
+          <h2><span>🧭</span> Lab 4: Real Python Gradient Descent</h2>
+          <p>
+            Each step calls the Python server to evaluate the derivative and calculate <code>x_new = x - lr * gradient</code>.
+          </p>
+        </div>
+
+        <div class="grid-layout">
+          <div>
+            <canvas id="cLab4" width="540" height="280"></canvas>
+            <div class="math-breakdown" style="margin-top: 14px;">
+              <div class="math-step">
+                <span class="step-title">Current Point in Python:</span>
+                <span class="step-val" id="l4_cur">x = 2.40 | y = 5.76</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">Python Gradient (df/dx = 2x):</span>
+                <span class="step-val" id="l4_slope">+4.80</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">Python Step Update:</span>
+                <span class="step-val" id="l4_step">x_new = 2.40 - (0.20 × 4.80) = 1.44</span>
+              </div>
+              <div class="backend-badge" id="l4_engine_badge">⚡ Executed by Real Python Engine</div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="form-group">
+              <h3>Settings</h3>
+              <div class="field-row">
+                <label>Starting x:</label>
+                <input type="number" id="l4_init_x" step="0.2" value="2.4">
+              </div>
+              <div class="field-row">
+                <label>Learning Rate (η):</label>
+                <input type="number" id="l4_lr" step="0.05" min="0.01" max="1.0" value="0.2">
+              </div>
+            </div>
+
+            <div class="btn-bar">
+              <button class="btn btn-primary" onclick="stepL4()">Take 1 Step in Python ➔</button>
+              <button class="btn" onclick="resetL4()">Reset to Start</button>
+            </div>
+
+            <h4 style="font-size: 13px; color: var(--text-muted); text-transform: uppercase;">Step History:</h4>
+            <div class="log-box" id="l4_log">
+              <div class="log-entry">Click 'Take 1 Step in Python' to execute...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         LAB 5: DECISION BOUNDARY (POWERED BY REAL NUMPY)
+         ======================================================== -->
+    <section id="lab5" class="lab-panel">
+      <div class="card">
+        <div class="card-header">
+          <h2><span>📐</span> Lab 5: NumPy Decision Boundary</h2>
+          <p>
+            Training steps perform vectorized gradient descent directly on the NumPy backend array.
+          </p>
+        </div>
+
+        <div class="grid-layout">
+          <div>
+            <canvas id="cLab5" width="540" height="340"></canvas>
+            <div class="math-breakdown" style="margin-top: 14px;">
+              <div class="math-step">
+                <span class="step-title">NumPy Line Equation:</span>
+                <span class="step-val" id="l5_eq">(0.00)·x1 + (0.00)·x2 + (0.00) = 0</span>
+              </div>
+              <div class="backend-badge" id="l5_engine_badge">⚡ Executed by Real NumPy Logistic Regression</div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="btn-bar">
+              <button class="btn btn-primary" onclick="trainStepL5(1)">Train 1 Epoch in Python</button>
+              <button class="btn" onclick="trainStepL5(10)">Train 10 Epochs in Python</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         LAB 6: XOR BACKPROPAGATION (POWERED BY REAL NUMPY)
+         ======================================================== -->
+    <section id="lab6" class="lab-panel">
+      <div class="card">
+        <div class="card-header">
+          <h2><span>🧠</span> Lab 6: NumPy XOR Backpropagation Matrix Math</h2>
+          <p>
+            Matrix multiplications (<code>W1 @ x</code> and <code>W2 @ a1</code>) and gradients are computed using real NumPy matrix operations.
+          </p>
+        </div>
+
+        <div class="grid-layout">
+          <div>
+            <canvas id="cLab6" width="540" height="300"></canvas>
+            <div class="math-breakdown" style="margin-top: 14px;">
+              <div class="math-step">
+                <span class="step-title">NumPy Pred [0, 0] (Target 0):</span>
+                <span class="step-val" id="l6_o00">0.50</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">NumPy Pred [0, 1] (Target 1):</span>
+                <span class="step-val" id="l6_o01">0.50</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">NumPy Pred [1, 0] (Target 1):</span>
+                <span class="step-val" id="l6_o10">0.50</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">NumPy Pred [1, 1] (Target 0):</span>
+                <span class="step-val" id="l6_o11">0.50</span>
+              </div>
+              <div class="math-step">
+                <span class="step-title">Real Total MSE Loss:</span>
+                <span class="step-val highlight-res" id="l6_loss">Loss = 1.000</span>
+              </div>
+              <div class="backend-badge" id="l6_engine_badge">⚡ Executed by Real NumPy Matrix Multiplication (@)</div>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="btn-bar">
+              <button class="btn btn-primary" onclick="trainL6(50)">Train 50 Epochs in Python ➔</button>
+              <button class="btn" onclick="trainL6(200)">Train 200 Epochs in Python</button>
+              <button class="btn" onclick="resetL6()">Reset Weights</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         LAB 7: NEURON ACTION POTENTIAL & FIRING SIMULATOR
+         ======================================================== -->
+    <section id="lab7" class="lab-panel">
+      <div class="card">
+        <div class="card-header">
+          <h2><span>⚡</span> Lab 7: Live Action Potential & Neuron Firing Simulator</h2>
+          <p>
+            Real-time animation of signal propagation, synaptic weighting, accumulation at the soma, and threshold firing.
+          </p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <canvas id="cLab7" width="900" height="460"></canvas>
+
+          <div class="math-breakdown">
+            <div class="math-step">
+              <span class="step-title">Accumulated Weighted Sum:</span>
+              <span class="step-val" id="l7_mathFormula">z = (x1 · w1) + (x2 · w2) + b</span>
+            </div>
+            <div class="math-step">
+              <span class="step-title">Neuron State:</span>
+              <span class="step-val status-badge status-dormant" id="l7_statusBadge">DORMANT (0)</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <h3>1. Test Pattern (AND Gate: Inputs x1, x2)</h3>
+            <div class="btn-bar" id="l7_sampleBtns">
+              <button class="btn" onclick="setSampleL7(0, 0, this)">Input [0, 0]</button>
+              <button class="btn" onclick="setSampleL7(0, 1, this)">Input [0, 1]</button>
+              <button class="btn" onclick="setSampleL7(1, 0, this)">Input [1, 0]</button>
+              <button class="btn btn-primary" onclick="setSampleL7(1, 1, this)">Input [1, 1] (Fires! 🔥)</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <h3>2. Simulation Mode</h3>
+            <div class="btn-bar">
+              <button class="btn btn-primary" id="btnAutoL7" onclick="toggleAutoL7()">Auto Cycle: ON</button>
+              <button class="btn" onclick="triggerPulseL7()">Fire Pulse ⚡</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Tab Switching
+    function switchLab(labId, btn) {
+      document.querySelectorAll('.lab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('nav.lab-nav button').forEach(b => b.classList.remove('active'));
+      document.getElementById(labId).classList.add('active');
+      btn.classList.add('active');
+
+      if (labId === 'lab1') calcL1();
+      if (labId === 'lab2') previewL2();
+      if (labId === 'lab3') calcL3();
+      if (labId === 'lab4') drawL4();
+      if (labId === 'lab5') drawL5();
+      if (labId === 'lab6') trainL6(0);
+      if (labId === 'lab7') initL7();
+    }
+
+    // Check Server Status on Load
+    async function checkServer() {
+      try {
+        const res = await fetch('/api/info', { method: 'POST', body: '{}' });
+        const data = await res.json();
+        document.getElementById('serverStatusText').innerText = 
+          `Connected: Python ${data.python_version} | NumPy ${data.numpy_version} (PID ${data.pid})`;
+      } catch (err) {
+        document.getElementById('serverStatusText').innerText = "Backend Disconnected";
+        document.querySelector('.status-dot').style.background = "#f87171";
+      }
+    }
+
+    /* ============================================================
+       LAB 1: NEURON ARITHMETIC WITH REAL PYTHON
+       ============================================================ */
+    function syncL1(key, val) {
+      const num = parseFloat(val);
+      document.getElementById(`l1_${key}_r`).value = num;
+      document.getElementById(`l1_${key}_n`).value = num.toFixed(1);
+      calcL1();
+    }
+
+    function presetL1(preset) {
+      if (preset === 'AND') {
+        syncL1('x1', 1.0); syncL1('x2', 1.0);
+        syncL1('w1', 0.5); syncL1('w2', 0.5); syncL1('b', -0.7);
+      } else if (preset === 'OR') {
+        syncL1('x1', 1.0); syncL1('x2', 0.0);
+        syncL1('w1', 0.6); syncL1('w2', 0.6); syncL1('b', -0.3);
+      } else if (preset === 'RESET') {
+        syncL1('x1', 0.0); syncL1('x2', 0.0);
+        syncL1('w1', 0.0); syncL1('w2', 0.0); syncL1('b', 0.0);
+      }
+    }
+
+    async function calcL1() {
+      const x1 = parseFloat(document.getElementById('l1_x1_n').value) || 0;
+      const x2 = parseFloat(document.getElementById('l1_x2_n').value) || 0;
+      const w1 = parseFloat(document.getElementById('l1_w1_n').value) || 0;
+      const w2 = parseFloat(document.getElementById('l1_w2_n').value) || 0;
+      const b = parseFloat(document.getElementById('l1_b_n').value) || 0;
+      const act = document.getElementById('l1_act').value;
+
+      try {
+        const res = await fetch('/api/calc_neuron', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ x1, x2, w1, w2, b, activation: act })
+        });
+        const d = await res.json();
+
+        document.getElementById('l1_dot').innerText = `np.dot([${x1}, ${x2}], [${w1}, ${w2}]) = ${(d.p1 + d.p2).toFixed(2)}`;
+        document.getElementById('l1_bias_val').innerText = `+ (${b >= 0 ? '+' : ''}${b.toFixed(2)}) = ${d.z >= 0 ? '+' : ''}${d.z.toFixed(2)}`;
+        document.getElementById('l1_sum').innerText = `z = ${d.z >= 0 ? '+' : ''}${d.z.toFixed(2)}`;
+
+        const outElem = document.getElementById('l1_final');
+        outElem.innerText = `Output = ${d.output.toFixed(2)} (${d.output > 0 ? 'FIRED! 🔥' : 'DORMANT ❄️'})`;
+        outElem.className = d.output > 0 ? "step-val highlight-res" : "step-val highlight-dormant";
+
+        drawL1(x1, x2, w1, w2, b, d.z, d.output);
+      } catch (e) {
+        console.error("API error:", e);
+      }
+    }
+
+    function drawL1(x1, x2, w1, w2, b, z, out) {
+      const cvs = document.getElementById('cLab1');
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(90, 75); ctx.lineTo(280, 140); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(90, 205); ctx.lineTo(280, 140); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(280, 140); ctx.lineTo(450, 140); ctx.stroke();
+
+      ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 12px sans-serif';
+      ctx.fillText(`w1 = ${w1.toFixed(1)}`, 160, 95);
+      ctx.fillText(`w2 = ${w2.toFixed(1)}`, 160, 190);
+      ctx.fillStyle = '#fb923c';
+      ctx.fillText(`b = ${b.toFixed(1)}`, 280, 215);
+
+      drawNode(ctx, 90, 75, 26, '#1e293b', '#38bdf8', `x1=${x1.toFixed(1)}`);
+      drawNode(ctx, 90, 205, 26, '#1e293b', '#38bdf8', `x2=${x2.toFixed(1)}`);
+
+      const somaCol = out > 0 ? '#15803d' : '#7f1d1d';
+      const somaStroke = out > 0 ? '#4ade80' : '#f87171';
+      drawNode(ctx, 280, 140, 44, somaCol, somaStroke, `z=${z.toFixed(2)}`, 'Soma (Σ)');
+
+      const outCol = out > 0 ? '#15803d' : '#1e293b';
+      const outStroke = out > 0 ? '#4ade80' : '#475569';
+      drawNode(ctx, 450, 140, 28, outCol, outStroke, `y=${out.toFixed(1)}`);
+    }
+
+    function drawNode(ctx, x, y, r, fill, stroke, text, subtext = '') {
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = fill; ctx.fill();
+      ctx.strokeStyle = stroke; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.fillStyle = '#ffffff'; ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = subtext ? 'bottom' : 'middle';
+      ctx.fillText(text, x, y - (subtext ? 2 : 0));
+      if (subtext) {
+        ctx.fillStyle = '#94a3b8'; ctx.font = '10px sans-serif';
+        ctx.textBaseline = 'top';
+        ctx.fillText(subtext, x, y + 2);
+      }
+    }
+
+    /* ============================================================
+       LAB 2: TRAINING WITH REAL PYTHON
+       ============================================================ */
+    const l2_dataset = [
+      { x: [0, 0], y: 0 },
+      { x: [0, 1], y: 0 },
+      { x: [1, 0], y: 0 },
+      { x: [1, 1], y: 1 }
+    ];
+
+    async function previewL2() {
+      const idx = parseInt(document.getElementById('l2_sample').value);
+      const sample = l2_dataset[idx];
+      const w1 = parseFloat(document.getElementById('l2_w1').value) || 0;
+      const w2 = parseFloat(document.getElementById('l2_w2').value) || 0;
+      const b = parseFloat(document.getElementById('l2_b').value) || 0;
+      const lr = parseFloat(document.getElementById('l2_lr').value) || 0.5;
+
+      const res = await fetch('/api/train_perceptron_step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x1: sample.x[0], x2: sample.x[1], target: sample.y, w1, w2, b, lr })
+      });
+      const d = await res.json();
+
+      document.getElementById('l2_disp_input').innerText = `[x1 = ${sample.x[0]}, x2 = ${sample.x[1]}] | Target: y = ${sample.y}`;
+      document.getElementById('l2_disp_pred').innerText = `z = ${d.z.toFixed(2)} ➔ Prediction = ${d.prediction}`;
+      document.getElementById('l2_disp_err').innerText = `Error = ${sample.y} - ${d.prediction} = ${d.error} (${d.error === 0 ? '✓ Correct' : '✗ Wrong'})`;
+      document.getElementById('l2_disp_delta').innerText = `Δw1 = ${d.dw1.toFixed(2)}, Δw2 = ${d.dw2.toFixed(2)}, Δb = ${d.db.toFixed(2)}`;
+      document.getElementById('l2_disp_new').innerText = `w1: ${d.new_w1.toFixed(2)}, w2: ${d.new_w2.toFixed(2)}, b: ${d.new_b.toFixed(2)}`;
+    }
+
+    async function stepL2() {
+      const idx = parseInt(document.getElementById('l2_sample').value);
+      const sample = l2_dataset[idx];
+      const w1 = parseFloat(document.getElementById('l2_w1').value) || 0;
+      const w2 = parseFloat(document.getElementById('l2_w2').value) || 0;
+      const b = parseFloat(document.getElementById('l2_b').value) || 0;
+      const lr = parseFloat(document.getElementById('l2_lr').value) || 0.5;
+
+      const res = await fetch('/api/train_perceptron_step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x1: sample.x[0], x2: sample.x[1], target: sample.y, w1, w2, b, lr })
+      });
+      const d = await res.json();
+
+      document.getElementById('l2_w1').value = d.new_w1.toFixed(2);
+      document.getElementById('l2_w2').value = d.new_w2.toFixed(2);
+      document.getElementById('l2_b').value = d.new_b.toFixed(2);
+
+      const log = document.getElementById('l2_log');
+      const time = new Date().toLocaleTimeString();
+      const statusText = d.error === 0 ? 'CORRECT (No change)' : `UPDATED IN PYTHON: Δw=[${d.dw1.toFixed(2)}, ${d.dw2.toFixed(2)}], Δb=${d.db.toFixed(2)}`;
+      log.innerHTML = `<div class="log-entry"><span class="time">[${time}]</span> Sample [${sample.x}]: Pred=${d.prediction}, Target=${sample.y} ➔ ${statusText}</div>` + log.innerHTML;
+
+      previewL2();
+    }
+
+    function resetL2() {
+      document.getElementById('l2_w1').value = "0.0";
+      document.getElementById('l2_w2').value = "0.0";
+      document.getElementById('l2_b').value = "0.0";
+      document.getElementById('l2_log').innerHTML = '<div class="log-entry">Weights reset to 0.0 in Python.</div>';
+      previewL2();
+    }
+
+    /* ============================================================
+       LAB 3: LOSS WITH REAL NUMPY
+       ============================================================ */
+    function syncL3(val) {
+      const num = parseFloat(val);
+      document.getElementById('l3_w_r').value = num;
+      document.getElementById('l3_w_n').value = num.toFixed(2);
+      calcL3();
+    }
+
+    async function calcL3() {
+      const x = parseFloat(document.getElementById('l3_x').value) || 2.0;
+      const y = parseFloat(document.getElementById('l3_y').value) || 3.0;
+      const w = parseFloat(document.getElementById('l3_w_n').value) || 0.5;
+
+      const res = await fetch('/api/calc_loss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x, y, w })
+      });
+      const d = await res.json();
+
+      document.getElementById('l3_pred').innerText = `y_hat = ${w.toFixed(2)} × ${x.toFixed(2)} = ${d.prediction.toFixed(2)}`;
+      document.getElementById('l3_diff').innerText = `${d.prediction.toFixed(2)} - ${y.toFixed(2)} = ${d.difference.toFixed(2)}`;
+      document.getElementById('l3_loss').innerText = `Loss = (${d.difference.toFixed(2)})² = ${d.loss.toFixed(3)}`;
+
+      drawL3(d.curve_w, d.curve_loss, w, d.loss, d.optimal_w);
+    }
+
+    function drawL3(curveW, curveLoss, curW, curLoss, optW) {
+      const cvs = document.getElementById('cLab3');
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      const ox = 70;
+      const oy = cvs.height - 40;
+
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i < curveW.length; i++) {
+        const pw = curveW[i];
+        const ploss = curveLoss[i];
+        const sx = ox + ((pw + 1) / 5) * (cvs.width - 120);
+        const sy = oy - Math.min(ploss / 25, 1.0) * (oy - 40);
+        if (i === 0) ctx.moveTo(sx, sy);
+        else ctx.lineTo(sx, sy);
+      }
+      ctx.stroke();
+
+      if (optW >= -1 && optW <= 4) {
+        const optX = ox + ((optW + 1) / 5) * (cvs.width - 120);
+        ctx.strokeStyle = '#4ade80'; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(optX, 20); ctx.lineTo(optX, oy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#4ade80'; ctx.font = '11px sans-serif';
+        ctx.fillText(`Optimal w = ${optW.toFixed(2)}`, optX - 40, 16);
+      }
+
+      const curX = ox + ((curW + 1) / 5) * (cvs.width - 120);
+      const curY = oy - Math.min(curLoss / 25, 1.0) * (oy - 40);
+      ctx.beginPath(); ctx.arc(curX, curY, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#f87171'; ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+    }
+
+    /* ============================================================
+       LAB 4: GRADIENT STEPS IN REAL PYTHON
+       ============================================================ */
+    let curX_L4 = 2.4;
+    function resetL4() {
+      curX_L4 = parseFloat(document.getElementById('l4_init_x').value) || 2.4;
+      document.getElementById('l4_log').innerHTML = '<div class="log-entry">Reset in Python.</div>';
+      drawL4();
+    }
+
+    async function stepL4() {
+      const lr = parseFloat(document.getElementById('l4_lr').value) || 0.2;
+      const res = await fetch('/api/gradient_step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x: curX_L4, lr })
+      });
+      const d = await res.json();
+
+      const oldX = curX_L4;
+      curX_L4 = d.new_x;
+
+      const log = document.getElementById('l4_log');
+      const time = new Date().toLocaleTimeString();
+      log.innerHTML = `<div class="log-entry"><span class="time">[${time}]</span> Python update: ${oldX.toFixed(2)} ➔ ${curX_L4.toFixed(2)} | Slope: ${d.gradient.toFixed(2)} | Step: -${d.step_size.toFixed(2)}</div>` + log.innerHTML;
+
+      drawL4(d);
+    }
+
+    function drawL4(d = null) {
+      const cvs = document.getElementById('cLab4');
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      const ox = cvs.width / 2;
+      const oy = cvs.height - 40;
+
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let px = -3; px <= 3; px += 0.05) {
+        const py = px * px;
+        const sx = ox + (px / 3) * (ox - 40);
+        const sy = oy - (py / 9) * (oy - 30);
+        if (px === -3) ctx.moveTo(sx, sy);
+        else ctx.lineTo(sx, sy);
+      }
+      ctx.stroke();
+
+      const slope = d ? d.gradient : 2 * curX_L4;
+      const curPx = ox + (curX_L4 / 3) * (ox - 40);
+      const curPy = oy - (curX_L4 * curX_L4 / 9) * (oy - 30);
+      ctx.beginPath(); ctx.arc(curPx, curPy, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#facc15'; ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; ctx.stroke();
+
+      const lr = parseFloat(document.getElementById('l4_lr').value) || 0.2;
+      document.getElementById('l4_cur').innerText = `x = ${curX_L4.toFixed(2)} | y = ${(curX_L4 * curX_L4).toFixed(2)}`;
+      document.getElementById('l4_slope').innerText = `${slope >= 0 ? '+' : ''}${slope.toFixed(2)}`;
+      document.getElementById('l4_step').innerText = `x_new = ${curX_L4.toFixed(2)} - (${lr.toFixed(2)} × ${slope.toFixed(2)}) = ${(curX_L4 - lr * slope).toFixed(2)}`;
+    }
+
+    /* ============================================================
+       LAB 5: DECISION BOUNDARY IN REAL NUMPY
+       ============================================================ */
+    const pts5 = [
+      { x: 0.1, y: 0.2, c: 0 }, { x: 0.2, y: 0.9, c: 0 }, { x: 0.3, y: 0.6, c: 0 },
+      { x: 0.5, y: 0.8, c: 0 }, { x: 0.8, y: 0.9, c: 0 }, { x: 0.9, y: 0.2, c: 1 },
+      { x: 0.7, y: 0.1, c: 1 }, { x: 0.4, y: 0.3, c: 1 }
+    ];
+    let w5 = [0.0, 0.0];
+    let b5 = 0.0;
+
+    async function trainStepL5(epochs = 1) {
+      const res = await fetch('/api/train_boundary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ epochs })
+      });
+      const d = await res.json();
+      w5 = [d.w1, d.w2];
+      b5 = d.bias;
+      drawL5();
+    }
+
+    function drawL5() {
+      const cvs = document.getElementById('cLab5');
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      for (const p of pts5) {
+        const px = p.x * cvs.width;
+        const py = (1 - p.y) * cvs.height;
+        ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI * 2);
+        ctx.fillStyle = p.c === 0 ? '#38bdf8' : '#f87171';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5; ctx.stroke();
+      }
+
+      if (Math.abs(w5[1]) > 0.001) {
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let x = 0; x <= 1; x += 0.05) {
+          const y = -(w5[0] * x + b5) / w5[1];
+          const px = x * cvs.width;
+          const py = (1 - y) * cvs.height;
+          if (x === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+
+      document.getElementById('l5_eq').innerText = `(${w5[0].toFixed(2)})·x1 + (${w5[1].toFixed(2)})·x2 + (${b5.toFixed(2)}) = 0`;
+    }
+
+    /* ============================================================
+       LAB 6: XOR IN REAL NUMPY
+       ============================================================ */
+    async function trainL6(epochs = 50, reset = false) {
+      const res = await fetch('/api/train_xor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ epochs, reset })
+      });
+      const d = await res.json();
+
+      document.getElementById('l6_o00').innerText = d.preds[0].toFixed(2);
+      document.getElementById('l6_o01').innerText = d.preds[1].toFixed(2);
+      document.getElementById('l6_o10').innerText = d.preds[2].toFixed(2);
+      document.getElementById('l6_o11').innerText = d.preds[3].toFixed(2);
+      document.getElementById('l6_loss').innerText = `Total Loss = ${d.total_loss.toFixed(4)} (Epoch ${d.epoch})`;
+
+      drawL6();
+    }
+
+    function resetL6() {
+      trainL6(0, true);
+    }
+
+    function drawL6() {
+      const cvs = document.getElementById('cLab6');
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      const inX = 100; const hidX = 270; const outX = 440;
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+      for (const iy of [90, 210]) {
+        for (const hy of [90, 210]) {
+          ctx.beginPath(); ctx.moveTo(inX, iy); ctx.lineTo(hidX, hy); ctx.stroke();
+        }
+      }
+      for (const hy of [90, 210]) {
+        ctx.beginPath(); ctx.moveTo(hidX, hy); ctx.lineTo(outX, 150); ctx.stroke();
+      }
+
+      drawNode(ctx, inX, 90, 24, '#1e293b', '#38bdf8', 'x1');
+      drawNode(ctx, inX, 210, 24, '#1e293b', '#38bdf8', 'x2');
+      drawNode(ctx, hidX, 90, 26, '#0f766e', '#2dd4bf', 'h1');
+      drawNode(ctx, hidX, 210, 26, '#0f766e', '#2dd4bf', 'h2');
+      drawNode(ctx, outX, 150, 28, '#15803d', '#4ade80', 'Out');
+    }
+
+    /* ============================================================
+       LAB 7: LIVE NEURON FIRING & ACTION POTENTIAL SIMULATOR
+       ============================================================ */
+    let l7_active = false;
+    let l7_x1 = 1;
+    let l7_x2 = 1;
+    const l7_w1 = 0.5;
+    const l7_w2 = 0.5;
+    const l7_bias = -0.7;
+
+    let l7_autoCycle = true;
+    let l7_autoTimer = 0;
+    const l7_testCases = [
+      [0, 0],
+      [0, 1],
+      [1, 0],
+      [1, 1]
+    ];
+    let l7_testCaseIndex = 3;
+
+    let l7_progress = 0;
+    let l7_shockwaveRadius = 0;
+    let l7_shockwaveAlpha = 0;
+
+    const nX1_L7 = { x: 140, y: 150, radius: 34, label: "x1" };
+    const nX2_L7 = { x: 140, y: 310, radius: 34, label: "x2" };
+    const nSoma_L7 = { x: 480, y: 230, radius: 52, label: "Neuron Soma\nΣ + Step" };
+    const nOut_L7 = { x: 800, y: 230, radius: 36, label: "Output" };
+
+    function getZL7() {
+      return (l7_x1 * l7_w1) + (l7_x2 * l7_w2) + l7_bias;
+    }
+
+    function doesFireL7() {
+      return getZL7() >= 0;
+    }
+
+    function setSampleL7(nx1, nx2, btnElem) {
+      l7_x1 = nx1;
+      l7_x2 = nx2;
+      l7_progress = 0;
+      l7_shockwaveRadius = 0;
+      l7_shockwaveAlpha = 0;
+
+      if (btnElem) {
+        document.querySelectorAll('#l7_sampleBtns button').forEach(b => {
+          b.classList.remove('btn-primary');
+        });
+        btnElem.classList.add('btn-primary');
+      }
+      updateUIL7();
+    }
+
+    function toggleAutoL7() {
+      l7_autoCycle = !l7_autoCycle;
+      const btn = document.getElementById('btnAutoL7');
+      btn.innerText = l7_autoCycle ? "Auto Cycle: ON" : "Auto Cycle: OFF";
+      if (l7_autoCycle) {
+        btn.classList.add('btn-primary');
+      } else {
+        btn.classList.remove('btn-primary');
+      }
+    }
+
+    function triggerPulseL7() {
+      l7_progress = 0;
+      l7_shockwaveRadius = 0;
+      l7_shockwaveAlpha = 0;
+    }
+
+    function updateUIL7() {
+      const z = getZL7();
+      const fired = doesFireL7();
+      const mathElem = document.getElementById('l7_mathFormula');
+      const badge = document.getElementById('l7_statusBadge');
+      if (mathElem) {
+        mathElem.innerHTML = `z = (${l7_x1} · ${l7_w1}) + (${l7_x2} · ${l7_w2}) + (${l7_bias}) = <strong>${z >= 0 ? '+' : ''}${z.toFixed(2)}</strong>`;
+      }
+      if (badge) {
+        if (fired) {
+          badge.className = "step-val status-badge status-fired";
+          badge.innerText = "FIRED! 🔥 (Output = 1)";
+        } else {
+          badge.className = "step-val status-badge status-dormant";
+          badge.innerText = "DORMANT ❄️ (Output = 0)";
+        }
+      }
+    }
+
+    function drawLineL7(ctx, p1, p2, color, width) {
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.stroke();
+    }
+
+    function drawNodeL7(ctx, n, fill, stroke, text, subtext = "", glowColor = null) {
+      ctx.save();
+      if (glowColor) {
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 24;
+      }
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 13px -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = subtext ? "bottom" : "middle";
+      ctx.fillText(text, n.x, n.y - (subtext ? 2 : 0));
+
+      if (subtext) {
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px -apple-system, sans-serif";
+        ctx.textBaseline = "top";
+        ctx.fillText(subtext, n.x, n.y + 4);
+      }
+    }
+
+    function animateL7() {
+      const cvs = document.getElementById('cLab7');
+      if (!cvs) return;
+      const panel = document.getElementById('lab7');
+      if (!panel || !panel.classList.contains('active')) {
+        l7_active = false;
+        return;
+      }
+
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0, 0, cvs.width, cvs.height);
+
+      if (l7_autoCycle) {
+        l7_autoTimer++;
+        if (l7_autoTimer > 180) {
+          l7_autoTimer = 0;
+          l7_testCaseIndex = (l7_testCaseIndex + 1) % l7_testCases.length;
+          const [nx1, nx2] = l7_testCases[l7_testCaseIndex];
+          const buttons = document.querySelectorAll('#l7_sampleBtns button');
+          setSampleL7(nx1, nx2, buttons[l7_testCaseIndex]);
+        }
+      }
+
+      l7_progress += 0.016;
+      if (l7_progress > 2.2) {
+        l7_progress = 0;
+        l7_shockwaveRadius = 0;
+        l7_shockwaveAlpha = 0;
+      }
+
+      const z = getZL7();
+      const fired = doesFireL7();
+
+      // Synapses
+      drawLineL7(ctx, nX1_L7, nSoma_L7, "#334155", 3);
+      drawLineL7(ctx, nX2_L7, nSoma_L7, "#334155", 3);
+      drawLineL7(ctx, nSoma_L7, nOut_L7, "#334155", 4);
+
+      // Synapse weight badges
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "bold 12px sans-serif";
+      ctx.fillText(`w1 = ${l7_w1}`, 290, 180);
+      ctx.fillText(`w2 = ${l7_w2}`, 290, 290);
+      ctx.fillStyle = "#fb923c";
+      ctx.fillText(`bias = ${l7_bias}`, 480, 310);
+
+      // Pulses towards Soma
+      if (l7_progress <= 1.0) {
+        const t = l7_progress;
+        if (l7_x1 > 0) {
+          const px = nX1_L7.x + (nSoma_L7.x - nX1_L7.x) * t;
+          const py = nX1_L7.y + (nSoma_L7.y - nX1_L7.y) * t;
+          ctx.save();
+          ctx.shadowColor = "#38bdf8";
+          ctx.shadowBlur = 16;
+          ctx.beginPath();
+          ctx.arc(px, py, 7, 0, Math.PI * 2);
+          ctx.fillStyle = "#38bdf8";
+          ctx.fill();
+          ctx.restore();
+        }
+        if (l7_x2 > 0) {
+          const px = nX2_L7.x + (nSoma_L7.x - nX2_L7.x) * t;
+          const py = nX2_L7.y + (nSoma_L7.y - nX2_L7.y) * t;
+          ctx.save();
+          ctx.shadowColor = "#38bdf8";
+          ctx.shadowBlur = 16;
+          ctx.beginPath();
+          ctx.arc(px, py, 7, 0, Math.PI * 2);
+          ctx.fillStyle = "#38bdf8";
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Shockwave at Soma
+      if (l7_progress > 1.0 && fired) {
+        if (l7_shockwaveRadius === 0) {
+          l7_shockwaveRadius = nSoma_L7.radius;
+          l7_shockwaveAlpha = 1.0;
+        }
+        l7_shockwaveRadius += 1.8;
+        l7_shockwaveAlpha = Math.max(0, l7_shockwaveAlpha - 0.022);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(nSoma_L7.x, nSoma_L7.y, l7_shockwaveRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(74, 222, 128, ${l7_shockwaveAlpha})`;
+        ctx.lineWidth = 4;
+        ctx.shadowColor = "#4ade80";
+        ctx.shadowBlur = 18;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Axon Output Pulse
+      let outputNodeLit = false;
+      if (l7_progress > 1.1 && fired) {
+        const tOut = Math.min(1.0, (l7_progress - 1.1) / 0.7);
+        const px = nSoma_L7.x + (nOut_L7.x - nSoma_L7.x) * tOut;
+        const py = nSoma_L7.y + (nOut_L7.y - nSoma_L7.y) * tOut;
+
+        ctx.save();
+        ctx.shadowColor = "#4ade80";
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(px, py, 9, 0, Math.PI * 2);
+        ctx.fillStyle = "#4ade80";
+        ctx.fill();
+        ctx.restore();
+
+        if (tOut >= 0.85) outputNodeLit = true;
+      }
+
+      // Input Nodes
+      const fillX1 = l7_x1 ? "#0284c7" : "#1e293b";
+      const strokeX1 = l7_x1 ? "#38bdf8" : "#475569";
+      drawNodeL7(ctx, nX1_L7, fillX1, strokeX1, `x1 = ${l7_x1}`, "Input 1", l7_x1 ? "#38bdf8" : null);
+
+      const fillX2 = l7_x2 ? "#0284c7" : "#1e293b";
+      const strokeX2 = l7_x2 ? "#38bdf8" : "#475569";
+      drawNodeL7(ctx, nX2_L7, fillX2, strokeX2, `x2 = ${l7_x2}`, "Input 2", l7_x2 ? "#38bdf8" : null);
+
+      // Soma Node
+      let somaFill = "#1e293b";
+      let somaStroke = "#475569";
+      let somaGlow = null;
+      if (l7_progress > 1.0) {
+        if (fired) {
+          somaFill = "#14532d";
+          somaStroke = "#4ade80";
+          somaGlow = "#4ade80";
+        } else {
+          somaFill = "#450a0a";
+          somaStroke = "#f87171";
+          somaGlow = "#f87171";
+        }
+      }
+      drawNodeL7(ctx, nSoma_L7, somaFill, somaStroke, "Neuron Soma", `z = ${z.toFixed(2)}`, somaGlow);
+
+      // Output Node
+      let outFill = outputNodeLit ? "#166534" : "#1e293b";
+      let outStroke = outputNodeLit ? "#4ade80" : "#475569";
+      let outGlow = outputNodeLit ? "#4ade80" : null;
+      let outVal = outputNodeLit ? "1" : "0";
+      drawNodeL7(ctx, nOut_L7, outFill, outStroke, `Out = ${outVal}`, fired ? "Fired" : "Dormant", outGlow);
+
+      requestAnimationFrame(animateL7);
+    }
+
+    function initL7() {
+      updateUIL7();
+      if (!l7_active) {
+        l7_active = true;
+        requestAnimationFrame(animateL7);
+      }
+    }
+
+    // Startup check
+    checkServer();
+    calcL1();
+    previewL2();
+    calcL3();
+    drawL4();
+    drawL5();
+    trainL6(0);
+  </script>
+</body>
+</html>

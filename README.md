@@ -2,6 +2,15 @@
 
 A beginner-friendly project to understand neural networks step-by-step with visual explanations, plots, and simple code.
 
+## 🌐 Real Python & NumPy Interactive Web Lab
+
+You can explore all steps interactively in your browser with real-time Python/NumPy execution:
+
+```bash
+python server.py
+```
+Then visit **[http://localhost:8000](http://localhost:8000)** in your browser. Every button click, slider movement, and training step is executed directly by Python and NumPy on your computer.
+
 ## Learning path
 
 Follow these steps in order:
@@ -13,6 +22,7 @@ Follow these steps in order:
 5. `step5_simple_training.py` — train a neuron on AND/OR logic.
 6. `step6_decision_boundary.py` — watch a decision boundary move.
 7. `step7_two_layer_network.py` — understand hidden layers.
+8. `step8_neuron_firing_animation.py` — live animation of signals propagating and neuron firing.
 
 ## Install
 
@@ -22,6 +32,15 @@ pip install numpy matplotlib
 
 ## Run
 
+### Run everything with one command:
+```bash
+# Interactive menu or single command options:
+python run_all.py            # Opens menu to run web lab or all scripts
+python run_all.py --web      # Starts the backend server and opens the browser
+python run_all.py --scripts  # Runs all 8 scripts sequentially (step 1 to step 8)
+```
+
+### Or run individually:
 ```bash
 python step1_single_neuron.py
 python step2_forward_pass_visual.py
@@ -30,6 +49,7 @@ python step4_gradient_basics.py
 python step5_simple_training.py
 python step6_decision_boundary.py
 python step7_two_layer_network.py
+python step8_neuron_firing_animation.py
 ```
 
 ## What you will learn

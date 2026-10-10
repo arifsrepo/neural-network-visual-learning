@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neural Network: Neuron Firing & Action Potential Simulator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: #0b0f19;
+      color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 26px;
+      color: #38bdf8;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    p.subtitle {
+      color: #94a3b8;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      max-width: 960px;
+      width: 100%;
+    }
+    .canvas-card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+    }
+    canvas {
+      display: block;
+      background: radial-gradient(circle at 50% 50%, #151e32 0%, #0b0f19 100%);
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 900 / 460;
+    }
+    .controls-panel {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 16px;
+      width: 100%;
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 16px;
+      padding: 18px 24px;
+    }
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1 1 240px;
+    }
+    .control-group h3 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    button {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #f1f5f9;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    button:hover {
+      background: #334155;
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+    button.active {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+    }
+    .math-banner {
+      background: #1e293b;
+      border-left: 4px solid #38bdf8;
+      border-radius: 6px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-family: "Courier New", Courier, monospace;
+      color: #e2e8f0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    .status-badge {
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+    }
+    .status-fired {
+      background: rgba(74, 222, 128, 0.2);
+      color: #4ade80;
+      border: 1px solid #4ade80;
+    }
+    .status-dormant {
+      background: rgba(248, 113, 113, 0.2);
+      color: #f87171;
+      border: 1px solid #f87171;
+    }
+
+    /* Responsive queries */
+    @media (max-width: 768px) {
+      body {
+        padding: 14px 10px;
+      }
+      h1 {
+        font-size: 20px;
+      }
+      p.subtitle {
+        font-size: 13px;
+      }
+      .controls-panel {
+        padding: 14px 12px;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .btn-row {
+        flex-wrap: wrap;
+      }
+      .btn-row button {
+        flex: 1 1 120px;
+        text-align: center;
+        justify-content: center;
+      }
+      .math-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        font-size: 12px;
+      }
+      .status-badge {
+        align-self: flex-start;
+      }
+    }
+    @media (max-width: 400px) {
+      h1 {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1><span>⚡</span> Neuron Firing & Action Potential Simulator</h1>
+    <p class="subtitle">Visualizing signal propagation, synaptic weighting, accumulation, and threshold firing</p>
+  </header>
+
+  <div class="main-container">
+    <div class="canvas-card">
+      <canvas id="simCanvas" width="900" height="460"></canvas>
+    </div>
+
+    <div class="math-banner">
+      <div id="mathFormula">Calculation: z = (x1 · w1) + (x2 · w2) + b</div>
+      <div id="statusBadge" class="status-badge status-dormant">DORMANT (0)</div>
+    </div>
+
+    <div class="controls-panel">
+      <div class="control-group">
+        <h3>1. Test Pattern (AND Gate)</h3>
+        <div class="btn-row">
+          <button onclick="setSample(0, 0, this)">Input [0, 0]</button>
+          <button onclick="setSample(0, 1, this)">Input [0, 1]</button>
+          <button onclick="setSample(1, 0, this)">Input [1, 0]</button>
+          <button class="active" onclick="setSample(1, 1, this)">Input [1, 1] (Fires!)</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <h3>2. Mode</h3>
+        <div class="btn-row">
+          <button id="btnAuto" class="active" onclick="toggleAuto()">Auto Cycle: ON</button>
+          <button onclick="triggerPulse()">Fire Pulse ⚡</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Architecture geometry
+    const nX1 = { x: 140, y: 150, radius: 34, label: "x1" };
+    const nX2 = { x: 140, y: 310, radius: 34, label: "x2" };
+    const nSoma = { x: 480, y: 230, radius: 52, label: "Neuron Soma\nΣ + Step" };
+    const nOut = { x: 800, y: 230, radius: 36, label: "Output" };
+
+    // Model parameters (AND Gate)
+    let w1 = 0.5;
+    let w2 = 0.5;
+    let bias = -0.7;
+
+    let x1 = 1;
+    let x2 = 1;
+
+    // Simulation state
+    let autoCycle = true;
+    let autoTimer = 0;
+    const testCases = [
+      [0, 0],
+      [0, 1],
+      [1, 0],
+      [1, 1]
+    ];
+    let testCaseIndex = 3;
+
+    // Animation variables
+    let progress = 0; // 0.0 to 1.0 (synaptic travel), 1.0 to 1.8 (firing & axon)
+    let shockwaveRadius = 0;
+    let shockwaveAlpha = 0;
+
+    function getZ() {
+      return (x1 * w1) + (x2 * w2) + bias;
+    }
+
+    function doesFire() {
+      return getZ() >= 0;
+    }
+
+    function setSample(newX1, newX2, btnElement) {
+      x1 = newX1;
+      x2 = newX2;
+      progress = 0;
+      shockwaveRadius = 0;
+      shockwaveAlpha = 0;
+
+      if (btnElement) {
+        document.querySelectorAll('.control-group:first-child button').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+      }
+      updateUI();
+    }
+
+    function toggleAuto() {
+      autoCycle = !autoCycle;
+      const btn = document.getElementById('btnAuto');
+      btn.innerText = autoCycle ? "Auto Cycle: ON" : "Auto Cycle: OFF";
+      btn.classList.toggle('active', autoCycle);
+    }
+
+    function triggerPulse() {
+      progress = 0;
+      shockwaveRadius = 0;
+      shockwaveAlpha = 0;
+    }
+
+    function updateUI() {
+      const z = getZ();
+      const fired = doesFire();
+      const mathElem = document.getElementById('mathFormula');
+      const badge = document.getElementById('statusBadge');
+
+      mathElem.innerHTML = `z = (${x1} · ${w1}) + (${x2} · ${w2}) + (${bias}) = <strong>${z.toFixed(2)}</strong>`;
+
+      if (fired) {
+        badge.className = "status-badge status-fired";
+        badge.innerText = "FIRED! (Output = 1)";
+      } else {
+        badge.className = "status-badge status-dormant";
+        badge.innerText = "INHIBITED (Output = 0)";
+      }
+    }
+
+    function drawLine(p1, p2, color, width, dashed=false) {
+      ctx.beginPath();
+      if (dashed) ctx.setLineDash([6, 6]);
+      else ctx.setLineDash([]);
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawNode(n, fill, stroke, text, subtext = "", glowColor = null) {
+      ctx.save();
+      if (glowColor) {
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 24;
+      }
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 13px -apple-system, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = subtext ? "bottom" : "middle";
+      ctx.fillText(text, n.x, n.y - (subtext ? 2 : 0));
+
+      if (subtext) {
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "11px -apple-system, sans-serif";
+        ctx.textBaseline = "top";
+        ctx.fillText(subtext, n.x, n.y + 4);
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Handle auto loop cycling
+      if (autoCycle) {
+        autoTimer++;
+        if (autoTimer > 180) { // Cycle every ~3 seconds
+          autoTimer = 0;
+          testCaseIndex = (testCaseIndex + 1) % testCases.length;
+          const [nx1, nx2] = testCases[testCaseIndex];
+          const buttons = document.querySelectorAll('.control-group:first-child button');
+          setSample(nx1, nx2, buttons[testCaseIndex]);
+        }
+      }
+
+      // Progress advances 0 -> 2.0
+      progress += 0.016;
+      if (progress > 2.2) {
+        progress = 0;
+        shockwaveRadius = 0;
+        shockwaveAlpha = 0;
+      }
+
+      const z = getZ();
+      const fired = doesFire();
+
+      // 1. Draw Synapses
+      drawLine(nX1, nSoma, "#334155", 3);
+      drawLine(nX2, nSoma, "#334155", 3);
+      drawLine(nSoma, nOut, "#334155", 4);
+
+      // Synapse weight badges
+      ctx.fillStyle = "#38bdf8";
+      ctx.font = "bold 12px sans-serif";
+      ctx.fillText(`w1 = ${w1}`, 290, 180);
+      ctx.fillText(`w2 = ${w2}`, 290, 290);
+      ctx.fillStyle = "#fb923c";
+      ctx.fillText(`bias = ${bias}`, 480, 310);
+
+      // 2. Animate Traveling Pulses towards Soma (progress: 0.0 -> 1.0)
+      if (progress <= 1.0) {
+        const t = progress;
+        if (x1 > 0) {
+          const px = nX1.x + (nSoma.x - nX1.x) * t;
+          const py = nX1.y + (nSoma.y - nX1.y) * t;
+          ctx.save();
+          ctx.shadowColor = "#38bdf8";
+          ctx.shadowBlur = 16;
+          ctx.beginPath();
+          ctx.arc(px, py, 7, 0, Math.PI * 2);
+          ctx.fillStyle = "#38bdf8";
+          ctx.fill();
+          ctx.restore();
+        }
+        if (x2 > 0) {
+          const px = nX2.x + (nSoma.x - nX2.x) * t;
+          const py = nX2.y + (nSoma.y - nX2.y) * t;
+          ctx.save();
+          ctx.shadowColor = "#38bdf8";
+          ctx.shadowBlur = 16;
+          ctx.beginPath();
+          ctx.arc(px, py, 7, 0, Math.PI * 2);
+          ctx.fillStyle = "#38bdf8";
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // 3. Firing Shockwave
+      if (progress > 1.0 && fired) {
+        if (shockwaveRadius === 0) {
+          shockwaveRadius = nSoma.radius;
+          shockwaveAlpha = 1.0;
+        }
+        shockwaveRadius += 1.8;
+        shockwaveAlpha = Math.max(0, shockwaveAlpha - 0.022);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(nSoma.x, nSoma.y, shockwaveRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(74, 222, 128, ${shockwaveAlpha})`;
+        ctx.lineWidth = 4;
+        ctx.shadowColor = "#4ade80";
+        ctx.shadowBlur = 18;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 4. Output Pulse Traveling down Axon (progress: 1.1 -> 1.9)
+      let outputNodeLit = false;
+      if (progress > 1.1 && fired) {
+        const tOut = Math.min(1.0, (progress - 1.1) / 0.7);
+        const px = nSoma.x + (nOut.x - nSoma.x) * tOut;
+        const py = nSoma.y + (nOut.y - nSoma.y) * tOut;
+
+        ctx.save();
+        ctx.shadowColor = "#4ade80";
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(px, py, 9, 0, Math.PI * 2);
+        ctx.fillStyle = "#4ade80";
+        ctx.fill();
+        ctx.restore();
+
+        if (tOut >= 0.85) outputNodeLit = true;
+      }
+
+      // 5. Draw Input Nodes
+      const fillX1 = x1 ? "#0284c7" : "#1e293b";
+      const strokeX1 = x1 ? "#38bdf8" : "#475569";
+      drawNode(nX1, fillX1, strokeX1, `x1 = ${x1}`, "Input 1", x1 ? "#38bdf8" : null);
+
+      const fillX2 = x2 ? "#0284c7" : "#1e293b";
+      const strokeX2 = x2 ? "#38bdf8" : "#475569";
+      drawNode(nX2, fillX2, strokeX2, `x2 = ${x2}`, "Input 2", x2 ? "#38bdf8" : null);
+
+      // 6. Draw Soma
+      let somaFill = "#1e293b";
+      let somaStroke = "#475569";
+      let somaGlow = null;
+
+      if (progress > 1.0) {
+        if (fired) {
+          somaFill = "#14532d";
+          somaStroke = "#4ade80";
+          somaGlow = "#4ade80";
+        } else {
+          somaFill = "#450a0a";
+          somaStroke = "#f87171";
+          somaGlow = "#f87171";
+        }
+      }
+      drawNode(nSoma, somaFill, somaStroke, "Neuron Soma", `z = ${z.toFixed(2)}`, somaGlow);
+
+      // 7. Draw Output Node
+      let outFill = outputNodeLit ? "#166534" : "#1e293b";
+      let outStroke = outputNodeLit ? "#4ade80" : "#475569";
+      let outGlow = outputNodeLit ? "#4ade80" : null;
+      let outVal = outputNodeLit ? "1" : "0";
+      drawNode(nOut, outFill, outStroke, `Out = ${outVal}`, fired ? "Fired" : "Dormant", outGlow);
+
+      requestAnimationFrame(animate);
+    }
+
+    updateUI();
+    animate();
+  </script>
+</body>
+</html>
